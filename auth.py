@@ -1,9 +1,9 @@
 import config
-import requests
 import helpers
 
 import os
 import logging
+import requests
 
 
 def request(method, path, nocache=False, **kwargs):
