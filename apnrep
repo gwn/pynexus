@@ -79,13 +79,13 @@ def parse_args(argv):
 
     elif (
         os.environ.get('APPNEXUS_API_ENDPOINT') and
-        os.environ.get('APPNEXUS_HOST') and
+        os.environ.get('APPNEXUS_USER') and
         os.environ.get('APPNEXUS_PASS')
     ):
         args.config = {
             'api_endpoint': os.environ['APPNEXUS_API_ENDPOINT'],
             'user'        : os.environ['APPNEXUS_USER'],
-            'pass'        : os.environ['PASS']
+            'pass'        : os.environ['APPNEXUS_PASS']
         }
 
     else:
