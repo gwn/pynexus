@@ -21,7 +21,7 @@ def request(method, path, nocache=False, **kwargs):
 
 
     try:
-        token = getToken(nocache=nocache)
+        token = get_token(nocache=nocache)
     except Exception as e:
         logging.debug('An exception occurred while getting a token (%s): %s',
                       e.__class__.__name__,
@@ -72,6 +72,8 @@ def get_token(nocache=False):
 
     cache_file = os.path.join(config.cache_dir, 'pynexus_auth_token')
 
+
+    token = None
 
     if not nocache:
         token = fetch_token_from_cache(cache_file)
