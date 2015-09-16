@@ -11,7 +11,7 @@ import json
 
 
 def main(argv):
-    """ documentation """
+    """ Fetch the requested report from App Nexus and save it to file system. """
 
     # boot
     args = parse_args(argv)
@@ -34,7 +34,7 @@ def main(argv):
 
 
     # prompt user for confirmation
-    if not args.non_interaction:
+    if not args.no_interaction:
         prompt_user_for_confirmation(report)
 
 
@@ -50,26 +50,29 @@ def main(argv):
     )
 
     # fetch and save report
-    pynexus.report.get(report, report_file, debug=True)
+    pynexus.report.get(report, report_file, debug=args.debug)
 
 
     ##
-    print report_file
+    print os.path.realpath(report_file)
 
 
 
 def parse_args(argv):
-    """ documentation missing """
+    """ Parse the arguments using argparse lib and set App Nexus
+    configuration params using the given config file or appropriate
+    env vars. """
 
-    parser = argparse.ArgumentParser(description='description missing')
+    parser = argparse.ArgumentParser(description='Fetch the requested report from App Nexus and save it to file system.')
 
-    parser.add_argument('report_request',    help='help missing')
-    parser.add_argument('--config',          help='help missing')
-    parser.add_argument('--save_dir',        default='', help='help missing')
-    parser.add_argument('--non-interaction', action='store_true', help='help missing')
-    parser.add_argument('--start',           help='help missing')
-    parser.add_argument('--end',             help='help missing')
-    parser.add_argument('--interval',        help='help missing')
+    parser.add_argument('report_request',          help='Path to JSON file that contains the report request.')
+    parser.add_argument('-c', '--config',          help='Path to JSON file that contains the keys "api_endpoint", "user" and "pass". If this parameter is not given, env vars APPNEXUS_API_ENDPOINT, APPNEXUS_USER and APPNEXUS_PASS must be set.')
+    parser.add_argument('-d', '--save_dir',        default='', help='The directory to save the report CSV. Default is current directory.')
+    parser.add_argument('-I', '--no-interaction',  action='store_true', help='Whether to ask confirmation before fetching report.')
+    parser.add_argument('-s', '--start',           help='Value for "start_date" parameter of report request.')
+    parser.add_argument('-e', '--end',             help='Value for "end_date" parameter of report request.')
+    parser.add_argument('-i', '--interval',        help='Value for "report_interval" parameter of report request.')
+    parser.add_argument('--debug',                 action='store_true', help='Whether to print extra debug information or not.')
 
     args = parser.parse_args(argv[1:])
 
