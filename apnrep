@@ -1,0 +1,121 @@
+#!/usr/bin/env python
+
+import pynexus.config
+import pynexus.report
+import sys
+import os
+import datetime
+import argparse
+import pprint
+import json
+
+
+def main(argv):
+    """ documentation """
+
+    # boot
+    args = parse_args(argv)
+    pynexus.config.set(api_endpoint = args.config['api_endpoint'],
+                       auth_user    = args.config['user'],
+                       auth_pass    = args.config['pass'])
+
+
+    # get report request
+    report = json.load(open(args.report_request, 'r'))
+
+
+    # inject time params
+    time_params = {'start'   : 'start_date',
+                   'end'     : 'end_date',
+                   'interval': 'report_interval'}
+
+    for arg, param in time_params.items():
+        report['report'][param] = getattr(args, arg)
+
+
+    # prompt user for confirmation
+    if not args.non_interaction:
+        prompt_user_for_confirmation(report)
+
+
+    # determine report path
+    report_dir = os.path.join(args.save_dir, report['report']['report_type'])
+
+    if not os.path.exists(report_dir):
+        os.makedirs(report_dir)
+
+    report_file = os.path.join(
+        report_dir,
+        datetime.datetime.now().strftime('%Y%m%d_%H%M.csv')
+    )
+
+    # fetch and save report
+    pynexus.report.get(report, report_file, debug=True)
+
+
+    ##
+    print report_file
+
+
+
+def parse_args(argv):
+    """ documentation missing """
+
+    parser = argparse.ArgumentParser(description='description missing')
+
+    parser.add_argument('report_request',    help='help missing')
+    parser.add_argument('--config',          help='help missing')
+    parser.add_argument('--save_dir',        default='', help='help missing')
+    parser.add_argument('--non-interaction', action='store_true', help='help missing')
+    parser.add_argument('--start',           help='help missing')
+    parser.add_argument('--end',             help='help missing')
+    parser.add_argument('--interval',        help='help missing')
+
+    args = parser.parse_args(argv[1:])
+
+
+    if args.config:
+        args.config = json.load(open(args.config, 'r'))
+
+    elif (
+        os.environ.get('APPNEXUS_API_ENDPOINT') and
+        os.environ.get('APPNEXUS_HOST') and
+        os.environ.get('APPNEXUS_PASS')
+    ):
+        args.config = {
+            'api_endpoint': os.environ['APPNEXUS_API_ENDPOINT'],
+            'user'        : os.environ['APPNEXUS_USER'],
+            'pass'        : os.environ['PASS']
+        }
+
+    else:
+        print """
+            You must either provide a --config parameter or
+            set the env vars APPNEXUS_API_ENDPOINT, APPNEXUS_USER and APPNEXUS_PASS!
+            Call this script with the --help option for more information.
+        """
+
+        sys.exit(1)
+
+
+    return args
+
+
+def prompt_user_for_confirmation(report_payload):
+    print 'I will now fetch the report for the payload below:'
+    pp(report_payload)
+
+    confirmation = raw_input('Are you sure? > ')
+
+    if confirmation.lower() != 'yes':
+        sys.exit(0)
+
+
+def pp(obj):
+    print ''
+    pprint.pprint(obj)
+    print ''
+
+
+if __name__ == '__main__':
+    main(sys.argv)
